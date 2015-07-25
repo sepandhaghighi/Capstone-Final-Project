@@ -1,0 +1,113 @@
+---
+title: "Capstone Milestone Report"
+author: "Sepand Haghighi"
+date: "Monday, July 20, 2015"
+output: html_document
+---
+In This Project We Want To Make A Algorithm To Predict Next Words And Sentences By Natural Language Processing Technics Such As Statistical Tehcnic n-grams , And This This Report We Load And Extract Some Important Feature Of Data , In All Of The Part we Include R-Lang Code And Comment For Better Documentation.
+# 1.Library Import And Loading Datasets  :  
+ In This Part We Include Library And Then Load English Data Sets , Because Its Big ,  We Read Lines Of It By ReadLines And Make Connection By File() Command    
+    
+    
+```{r , warning=FALSE,message=FALSE}
+library(stringr) #Stringr Package For Working With Str_length And Word Count
+library(ggplot2) # ggplot2 Package For Plott With This Graphic System
+library(stylo) # Stylo Package For Work With n-grams and convert txt to words
+library(gridExtra) # GridExtra Package For Plotting Multiple Plot In ggplot2 system
+```
+
+```{r Lodaing Data , cache=TRUE , warning=FALSE}
+    # Useful Library For Readinf And Counting String In R
+  con<-file('final/en_US/en_US.blogs.txt'); # Open A Connection For Reading File  (Blog File)
+  blog_file<-readLines(con);  # Read Blog Text File By ReadLines Function
+  close(con)           # Close the Connection Of File
+  con<-file('final/en_US/en_US.news.txt') # Open A Connection FOr Reading File (News  File)
+  news_file<-readLines(con); # Read News Text File By ReadLines Function
+  close(con) # Close the Connection Of File
+  con<-file('final/en_US/en_US.twitter.txt') # Open A Connection For Reading File (Twitter File)
+  twitter_file<-readLines(con) # Read Twitter Text File By ReadLines Function
+  close(con) # Close the Connection Of File
+
+```
+# 2. Summary Of DataSets :    
+
+In This Part We Extract Basic Information Such As Each File Length And Number Of Words For Next Steps Of This Project .          
+```{r Extract Basic Information  , cache=TRUE}
+  blog_length<-length(blog_file) # Get Length Of blog_file
+  news_length<-length(news_file) # Get Length Of news_file
+  twitter_length<-length(twitter_file) #Get Length Of twitter_file
+  blog_wNumber<-sum(str_count(blog_file,"\\S+")) #Count words Number In blog_file
+  news_wNumber<-sum(str_count(news_file,"\\S+")) #Count words Number In news_file
+  twitter_wnumber<-sum(str_count(twitter_file,"\\S+")) #Count words Number In twitter_file
+
+
+
+```
+Summary Of Three Files :            
+
+Blog Text File   Length = `r length(blog_file)`    Number Of Words =`r sum(str_count(blog_file,"\\S+"))`     
+News Text File Length = `r length(news_file)`      Number Of Words =`r sum(str_count(news_file,"\\S+"))`        
+      Twitter Text File Length = `r length(twitter_file)`   Number Of Words =`r sum(str_count(twitter_file,"\\S+"))`          
+     
+# 3. Extract Some Feature :     
+In This Part We Extract Some Feature Of This Three Text File (1-Number Of Vowel Letter In Each File 2-Estimated Number Of Unique Words In Each File 3-Number Of 2,3-grams In Each Files)              
+
+## 1.Vowel Letter :             
+  For This Step we Find aAeEoOiIuU In Each File               
+
+```{r VowelLetter}
+vowel_letter_blog<-length(grep('[aAeEoOiIuU]',blog_file)) #Find Number Of Vowel Letters In blog_file by grep function
+vowel_letter_news<-length( grep('[aAeEoOiIuU]',news_file)) #Find Number Of Vowel Letters In news_file by grep function
+vowel_letter_twitter<-length(grep('[aAeEoOiIuU]',twitter_file))# Find Number Of Vowel Letters In twitter_file by grep function
+
+x<-c('blog','news','twitter') #Create Character Vector For X Axis In Plotting
+y<-c(vowel_letter_blog,vowel_letter_news,vowel_letter_twitter) # Create Character Vector For Y Axis
+
+qplot(x,y,main="Vowel Letters Number In Each File",xlab = "File Name",ylab="Frequency") # Plot in ggplot2 System By qplot function
+
+
+
+```
+
+We Can See That Number Of Vowel Letters In News File Are Very Low And In Twitter are Very High.
+         
+## 2.Unique Words  :        
+
+In This Part We Show Number Of Unique Word In Each Text File    
+```{r UWords,fig.pos=10}
+sampled_blog<-sample(blog_file,replace=FALSE,size = 3000) # Get 3000 Sample Of blog_file without replacement
+blog_words<-txt.to.words(sampled_blog) # Convert Text To Words By txt.to.words function in stylo library
+news_words<-txt.to.words(sample(news_file,replace =FALSE,3000))
+twitter_words<-txt.to.words(sample(twitter_file,replace=FALSE,3000))
+unique_word<-c(length(unique(blog_words)),length(unique(news_words)),length(unique(twitter_words))) # Create Vector Of Length of Unique words In Each Text File
+qplot(x,unique_word,main="Number Of Unique Words In Each Text File",xlab="File Name",ylab="Frequency") # Plot Number Of Unique Words In Each File By qplot Function
+```      
+
+        
+We Can See That Number Of Unique Word In Twitter File is Much Lower Than Two Others.        
+        
+
+## 3.Make n-grams  :          
+In This Part We make 2.3-grams By make.ngrams in each File Seperatly and plot Number Of This n-grams to compare.                      
+
+```{r, fig.pos=10}
+
+
+gram_2_blog<-make.ngrams(blog_words,2)
+gram_2_news<-make.ngrams(news_words,2)
+gram_2_twitter<-make.ngrams(twitter_words,2)
+gram_3_blog<-make.ngrams(blog_words,3)
+gram_3_news<-make.ngrams(news_words,3)
+gram_3_twitter<-make.ngrams(twitter_words,3)
+grams_output<-c(length(gram_2_blog),length(gram_2_news),length(gram_2_twitter))
+grams_3_output<-c(length(gram_3_blog),length(gram_3_news),length(gram_3_twitter))
+p1<-qplot(c('blog','news','twitter'),grams_output,main="Number Of 2-grams In Each  File",xlab="File Name",ylab="Frequency")
+p2<-qplot(c('blog','news','twitter'),grams_3_output,main="Number Of 3-grams In Each  File",xlab="File Name",ylab="Frequency")
+grid.arrange(p1,p2,ncol=2)
+
+
+```
+            
+
+
+
